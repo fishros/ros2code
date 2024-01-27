@@ -30,7 +30,9 @@ RUN sudo apt update && sudo apt install -y \
     python3-rosdep \
     python3-setuptools \
     python3-vcstool \
-    wget
+    wget \
+    libacl1-dev
+    
 
 RUN sudo apt install -y \
     python3-flake8-blind-except \
@@ -48,11 +50,11 @@ RUN mkdir -p ~/ros2_humble/src && \
     vcs import --input https://raw.githubusercontent.com/ros2/ros2/humble/ros2.repos src
 
 RUN sudo apt install python3-pip && \
-    sudo pip3 install rosdepc && \
-    sudo rosdepc init && \
-    rosdepc update && \
+    sudo pip3 install rosdep && \
+    sudo rosdep init && \
+    rosdep update && \
     cd ~/ros2_humble  && \
-    rosdepc install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers"
+    rosdep install --from-paths src --ignore-src -y --skip-keys "fastcdr rti-connext-dds-6.0.1 urdfdom_headers"
 
 RUN cd ~/ros2_humble/ && \
     colcon build --symlink-install
