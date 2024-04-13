@@ -1,0 +1,53 @@
+FROM nvidia/cuda:11.4.3-cudnn8-devel-ubuntu22.04
+
+RUN echo "chooses:\n" > fish_install.yaml \
+    && echo "- {choose: 5, desc: '一键安装:ROS(支持ROS和ROS2,树莓派Jetson)'}\n" >> fish_install.yaml \
+    && echo "- {choose: 2, desc: 更换源继续安装}\n" >> fish_install.yaml \
+    && echo "- {choose: 1, desc: 清理三方源}\n" >> fish_install.yaml \
+    && apt update && apt install wget python3 python3-distro python3-yaml -y \
+    && wget http://fishros.com/install  -O fishros && /bin/bash fishros \
+    && rm -rf /var/lib/apt/lists/*  /tmp/* /var/tmp/* \
+    && apt-get clean && apt autoclean \
+    && rm -rf fish_install.yaml
+
+RUN sudo apt update && sudo apt install locales && \
+    sudo locale-gen en_US en_US.UTF-8 && \
+    sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8 && \
+    export LANG=en_US.UTF-8
+
+RUN DEBIAN_FRONTEND=noninteractive apt install -y tzdata
+
+RUN sudo apt remove ros-humble-* -y \
+    && apt update \
+    &&  sudo apt install ros-humble-desktop -y \ 
+    &&  sudo apt install ros-humble-gazebo-ros -y \
+    &&  sudo apt install ros-humble-gazebo-msgs -y \
+    &&  sudo apt install ros-humble-xacro -y \
+    &&  sudo apt install ros-humble-ros2-control -y \
+    &&  apt update --fix-missing && \
+    sudo apt install ros-humble-gazebo-ros2-control -y && \
+    sudo apt install ros-humble-gazebo-plugins -y  && \
+    sudo apt install python3-pip -y && \
+    sudo pip3 install simple_pid 
+
+
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple \
+    && sudo pip3 install transforms3d && apt install psmisc -y
+
+
+RUN apt install ros-humble-ros2-controllers  ros-humble-position-controllers  -y
+
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+RUN pip3 install tensorflow==2.2.1 future keras matplotlib gym  cvxopt && apt install python3-tk -y && pip3 install pygame
+
+
+RUN apt install git && mkdir /opt/uuv && cd /opt/uuv && git clone https://github.com/berkeleyauv/Plankton.git src && colcon build
+
+# RUN cd ~/.gazebo && wget https://gitee.com/ohhuo/scripts/raw/master/gazebo_model.py && python3 gazebo_model.py
+
+
+# sudo docker run -dit --privileged --name=uuv -v /dev:/dev  -v /tmp/.X11-unix:/tmp/.X11-unix --device /dev/snd --device=/dev/dri/renderD128 -v /dev/dri:/dev/dri -e DISPLAY=unix$DISPLAY -v `pwd`:`pwd` -w `pwd` fishros2/ros2:uuv
+# sudo docker run -it --rm --privileged --name=uuv -v /dev:/dev  -v /tmp/.X11-unix:/tmp/.X11-unix --device /dev/snd --device=/dev/dri/renderD128 -v /dev/dri:/dev/dri -e DISPLAY=unix$DISPLAY -v `pwd`:`pwd` -w `pwd` fishros2/ros2:uuv colcon build
+
+
+# sudo docker run -it --rm --privileged --name=uuv -v /dev:/dev  -v /tmp/.X11-unix:/tmp/.X11-unix --gpu --device /dev/snd --device=/dev/dri/renderD128 -v /dev/dri:/dev/dri -e DISPLAY=unix$DISPLAY -v `pwd`:`pwd` -w `pwd` uuv
