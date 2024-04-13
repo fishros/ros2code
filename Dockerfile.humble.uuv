@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.4.3-cudnn8-devel-ubuntu22.04
+FROM nvidia/cuda:12.4.1-runtime-ubuntu22.04
 
 RUN echo "chooses:\n" > fish_install.yaml \
     && echo "- {choose: 5, desc: '一键安装:ROS(支持ROS和ROS2,树莓派Jetson)'}\n" >> fish_install.yaml \
